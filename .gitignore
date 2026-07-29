@@ -24,4 +24,6 @@ Thumbs.db
 
 ## App Settings / Configuration
 appsettings*.json
+.env
+
 
