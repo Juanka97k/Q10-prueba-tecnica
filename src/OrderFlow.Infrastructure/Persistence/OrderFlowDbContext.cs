@@ -5,7 +5,7 @@ namespace OrderFlow.Infrastructure.Persistence;
 
 public class OrderFlowDbContext : DbContext
 {
-    public OrderFlowDbContext(DbContextOptions<OrderFlowDbContext> options) 
+    public OrderFlowDbContext(DbContextOptions<OrderFlowDbContext> options)
         : base(options)
     {
     }
@@ -37,7 +37,8 @@ public class OrderFlowDbContext : DbContext
             entity.HasData(
                 new Stock { Sku = "ABC-01", Disponible = 100 },
                 new Stock { Sku = "XYZ-02", Disponible = 50 },
-                new Stock { Sku = "LMN-03", Disponible = 10 }
+                new Stock { Sku = "LMN-03", Disponible = 17 },
+                new Stock { Sku = "TFG-04", Disponible = 9 }
             );
         });
 

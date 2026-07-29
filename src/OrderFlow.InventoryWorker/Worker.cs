@@ -25,12 +25,23 @@ public class Worker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var host = _configuration["RabbitMQ:Host"] ?? _configuration["RABBITMQ_HOST"] ?? "localhost";
+        var user = _configuration["RabbitMQ:Username"] ?? _configuration["RABBITMQ_USER"] ?? "guest";
+        var pass = _configuration["RabbitMQ:Password"] ?? _configuration["RABBITMQ_PASSWORD"] ?? "guest";
+        var queue = _configuration["RabbitMQ:QueueName"] ?? _configuration["RABBITMQ_QUEUE_NAME"] ?? "order-created-queue";
+        var portStr = _configuration["RabbitMQ:Port"] ?? _configuration["RABBITMQ_PORT"];
+
         var factory = new ConnectionFactory
         {
-            HostName = _configuration["RabbitMQ:Host"] ?? "localhost",
-            UserName = _configuration["RabbitMQ:Username"] ?? "guest",
-            Password = _configuration["RabbitMQ:Password"] ?? "guest"
+            HostName = host,
+            UserName = user,
+            Password = pass
         };
+
+        if (int.TryParse(portStr, out var port))
+        {
+            factory.Port = port;
+        }
 
         // Reintentos de conexión por si RabbitMQ tarda en arrancar en Docker
         IConnection connection = null!;
@@ -55,7 +66,7 @@ public class Worker : BackgroundService
 
         // Declara la cola para asegurarse de que exista
         await channel.QueueDeclareAsync(
-            queue: "order-created-queue",
+            queue: queue,
             durable: true,
             exclusive: false,
             autoDelete: false,
@@ -102,13 +113,13 @@ public class Worker : BackgroundService
         };
 
         await channel.BasicConsumeAsync(
-            queue: "order-created-queue",
+            queue: queue,
             autoAck: false, // ACK manual para garantizar resiliencia
             consumer: consumer,
             cancellationToken: stoppingToken
         );
 
-        _logger.LogInformation("InventoryWorker está escuchando activamente en la cola 'order-created-queue'.");
+        _logger.LogInformation("InventoryWorker está escuchando activamente en la cola '{Queue}'.", queue);
 
         // Mantener vivo el servicio en segundo plano
         while (!stoppingToken.IsCancellationRequested)

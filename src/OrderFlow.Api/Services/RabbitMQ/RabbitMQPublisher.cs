@@ -16,19 +16,30 @@ public class RabbitMQPublisher : IMessagePublisher
 
     public async Task PublishOrderCreatedAsync(OrderCreatedIntegrationEvent @event)
     {
+        var host = _configuration["RabbitMQ:Host"] ?? _configuration["RABBITMQ_HOST"] ?? "localhost";
+        var user = _configuration["RabbitMQ:Username"] ?? _configuration["RABBITMQ_USER"] ?? "guest";
+        var pass = _configuration["RabbitMQ:Password"] ?? _configuration["RABBITMQ_PASSWORD"] ?? "guest";
+        var queue = _configuration["RabbitMQ:QueueName"] ?? _configuration["RABBITMQ_QUEUE_NAME"] ?? "order-created-queue";
+        var portStr = _configuration["RabbitMQ:Port"] ?? _configuration["RABBITMQ_PORT"];
+
         var factory = new ConnectionFactory
         {
-            HostName = _configuration["RabbitMQ:Host"] ?? "localhost",
-            UserName = _configuration["RabbitMQ:Username"] ?? "guest",
-            Password = _configuration["RabbitMQ:Password"] ?? "guest"
+            HostName = host,
+            UserName = user,
+            Password = pass
         };
+
+        if (int.TryParse(portStr, out var port))
+        {
+            factory.Port = port;
+        }
 
         using var connection = await factory.CreateConnectionAsync();
         using var channel = await connection.CreateChannelAsync();
 
         // Aseguramos que la cola exista antes de publicar
         await channel.QueueDeclareAsync(
-            queue: "order-created-queue",
+            queue: queue,
             durable: true,
             exclusive: false,
             autoDelete: false,
@@ -45,7 +56,7 @@ public class RabbitMQPublisher : IMessagePublisher
 
         await channel.BasicPublishAsync(
             exchange: string.Empty,
-            routingKey: "order-created-queue",
+            routingKey: queue,
             mandatory: true,
             basicProperties: properties,
             body: body
