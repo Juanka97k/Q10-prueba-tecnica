@@ -1,4 +1,7 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using OrderFlow.Api.Services;
+using OrderFlow.Api.Validators;
 using OrderFlow.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,13 +16,18 @@ builder.Services.AddOpenApi();
 // 3. Obtener Cadena de Conexión desde appsettings.json o Variables de Entorno
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// 4. Registrar Entity Framework Core con PostgreSQL
+// 4. Registrar Servicios del Dominio e Infraestructura
+builder.Services.AddScoped<IMessagePublisher, RabbitMQPublisher>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderRequestValidator>();
+
+// 5. Registrar Entity Framework Core con PostgreSQL
 builder.Services.AddDbContext<OrderFlowDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 var app = builder.Build();
 
-// 5. Mapear Swagger / OpenAPI en Desarrollo
+// 6. Mapear Swagger / OpenAPI en Desarrollo
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -27,10 +35,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// 6. Registrar Controladores de la API
+// 7. Registrar Controladores de la API
 app.MapControllers();
 
-// 7. Ejecutar Migraciones y Seeding Automático al Arranque de la App
+// 8. Ejecutar Migraciones y Seeding Automático al Arranque de la App
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<OrderFlowDbContext>();
