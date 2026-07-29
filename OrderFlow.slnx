@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/OrderFlow.Api/OrderFlow.Api.csproj" />
+    <Project Path="src/OrderFlow.Infrastructure/OrderFlow.Infrastructure.csproj" />
     <Project Path="src/OrderFlow.InventoryWorker/OrderFlow.InventoryWorker.csproj" />
     <Project Path="src/OrderFlow.Shared/OrderFlow.Shared.csproj" />
   </Folder>
