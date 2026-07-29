@@ -22,8 +22,8 @@ build/
 Thumbs.db
 .agents
 
-## App Settings / Configuration
-appsettings*.json
+## Environment / Secrets
 .env
+
 
 
