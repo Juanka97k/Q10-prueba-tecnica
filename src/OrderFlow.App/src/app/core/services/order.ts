@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Order } from '../models/order.model';
 import { CreateOrderRequest } from '../models/create-order-request.model';
+import { Stock } from '../models/stock.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -22,5 +23,9 @@ export class OrderService {
 
   createOrder(request: CreateOrderRequest): Observable<Order> {
     return this.http.post<Order>(this.apiUrl, request);
+  }
+
+  getStocks(): Observable<Stock[]> {
+    return this.http.get<Stock[]>(`${this.apiUrl}/stocks`);
   }
 }

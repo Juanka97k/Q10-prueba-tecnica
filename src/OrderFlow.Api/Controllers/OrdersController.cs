@@ -34,7 +34,7 @@ public class OrdersController : ControllerBase
         {
             _logger.LogWarning("Petición de creación de orden rechazada por validaciones.");
             var dictionary = validationResult.Errors
-        .GroupBy(e => e.PropertyName)
+                .GroupBy(e => e.PropertyName)
                 .ToDictionary(
                     g => g.Key,
                     g => g.Select(e => e.ErrorMessage).ToArray()
@@ -75,6 +75,27 @@ public class OrdersController : ControllerBase
             return Problem(
                 detail: ex.Message,
                 title: "Error al consultar pedidos",
+                statusCode: StatusCodes.Status500InternalServerError
+            );
+        }
+    }
+
+    [HttpGet("stocks")]
+    [ProducesResponseType(typeof(IEnumerable<StockResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetStocks(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var stocks = await _orderService.GetStocksAsync(cancellationToken);
+            return Ok(stocks);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al obtener el listado de inventario de stock.");
+            return Problem(
+                detail: ex.Message,
+                title: "Error al consultar inventario de stock",
                 statusCode: StatusCodes.Status500InternalServerError
             );
         }

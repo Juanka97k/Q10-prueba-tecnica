@@ -7,4 +7,5 @@ public interface IOrderService
     Task<OrderResponse> CreateOrderAsync(CreateOrderRequest request, CancellationToken cancellationToken = default);
     Task<IEnumerable<OrderResponse>> GetOrdersAsync(CancellationToken cancellationToken = default);
     Task<OrderResponse?> GetOrderByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<IEnumerable<StockResponse>> GetStocksAsync(CancellationToken cancellationToken = default);
 }

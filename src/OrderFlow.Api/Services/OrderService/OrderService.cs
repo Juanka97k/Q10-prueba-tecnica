@@ -116,4 +116,20 @@ public class OrderService : IOrderService
             throw new Exception($"Error al intentar obtener el pedido con ID '{id}'.", ex);
         }
     }
+
+    public async Task<IEnumerable<StockResponse>> GetStocksAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await _context.Stocks
+                .AsNoTracking()
+                .Select(s => new StockResponse(s.Sku, s.Disponible))
+                .ToListAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al consultar el catálogo de stocks en la base de datos.");
+            throw new Exception("No se pudo consultar el catálogo de stocks desde la base de datos.", ex);
+        }
+    }
 }

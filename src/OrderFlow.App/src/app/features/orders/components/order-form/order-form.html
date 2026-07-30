@@ -1,0 +1,63 @@
+<div class="card form-card">
+  <h2>📝 Crear Nuevo Pedido</h2>
+  <p class="card-desc">Ingresa los datos para registrar la orden en el sistema.</p>
+
+  <form [formGroup]="orderForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="clienteNombre">Nombre del Cliente *</label>
+      <input
+        id="clienteNombre"
+        type="text"
+        formControlName="clienteNombre"
+        placeholder="Ej. Juan Pérez"
+        [class.invalid]="orderForm.get('clienteNombre')?.invalid && orderForm.get('clienteNombre')?.touched"
+      />
+      <div *ngIf="orderForm.get('clienteNombre')?.invalid && orderForm.get('clienteNombre')?.touched" class="error-text">
+        El nombre del cliente es obligatorio (máx. 100 caracteres).
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>SKU del Producto *</label>
+      <div class="sku-selector">
+        <button
+          type="button"
+          *ngFor="let item of stocks()"
+          class="sku-btn"
+          [class.active]="orderForm.get('sku')?.value === item.sku"
+          (click)="selectSku(item.sku)"
+        >
+          {{ item.sku }} ({{ item.disponible }} disp.)
+        </button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="cantidad">Cantidad a Reservar *</label>
+      <input
+        id="cantidad"
+        type="number"
+        formControlName="cantidad"
+        min="1"
+        max="100"
+        [class.invalid]="orderForm.get('cantidad')?.invalid && orderForm.get('cantidad')?.touched"
+      />
+      <div *ngIf="orderForm.get('cantidad')?.invalid && orderForm.get('cantidad')?.touched" class="error-text">
+        La cantidad debe estar entre 1 y 100 unidades.
+      </div>
+    </div>
+
+    <div *ngIf="errorMessage()" class="alert alert-error">
+      ⚠️ {{ errorMessage() }}
+    </div>
+
+    <div *ngIf="successMessage()" class="alert alert-success">
+      ✅ {{ successMessage() }}
+    </div>
+
+    <button type="submit" class="btn-submit" [disabled]="isSubmitting()">
+      <span *ngIf="!isSubmitting()">Enviar Pedido 🚀</span>
+      <span *ngIf="isSubmitting()">Procesando...</span>
+    </button>
+  </form>
+</div>
