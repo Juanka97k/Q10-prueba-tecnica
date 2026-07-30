@@ -28,7 +28,7 @@ public class CreateOrderRequestValidatorTests
     [InlineData(0)]
     [InlineData(-5)]
     [InlineData(101)]
-    public async Task Validate_QuantityOutOfRange_ShouldHaveValidationError(int cantidadInvalida)
+    public async Task Validar_CantidadFueraDeRango_DebeRetornarErrorDeValidacion(int cantidadInvalida)
     {
         // 1. Arrange (Preparación)
         using var context = GetInMemoryDbContext();
@@ -49,8 +49,7 @@ public class CreateOrderRequestValidatorTests
     }
 
     [Fact]
-    [Trait("Category", "Unit")]
-    public async Task Validate_InvalidSku_ShouldHaveValidationError()
+    public async Task Validar_SkuInexistente_DebeRetornarErrorDeValidacion()
     {
         // 1. Arrange (Preparación)
         using var context = GetInMemoryDbContext();

@@ -22,7 +22,7 @@ public class OrderServiceTests
     }
 
     [Fact]
-    public async Task CreateOrderAsync_ValidRequest_ShouldSavePendingOrderAndPublishEvent()
+    public async Task CrearPedido_SolicitudValida_DebeGuardarPedidoPendienteYPublicarEvento()
     {
         // 1. Arrange (Preparación)
         using var context = GetInMemoryDbContext();
@@ -51,7 +51,7 @@ public class OrderServiceTests
         Assert.NotNull(orderInDb);
         Assert.Equal(OrderStatus.Pending, orderInDb.Estado);
 
-        // Verificar que el publisher de RabbitMQ fue invocado exactamente 1 vez con 1 parámetro
+        // Verificar que el publisher de RabbitMQ fue invocado exactamente 1 vez
         mockPublisher.Verify(
             p => p.PublishOrderCreatedAsync(It.IsAny<OrderCreatedIntegrationEvent>()),
             Times.Once

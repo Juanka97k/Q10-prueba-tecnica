@@ -35,7 +35,7 @@ public class InventoryProcessorTests : IDisposable
     }
 
     [Fact]
-    public async Task ProcessOrderCreatedAsync_SufficientStock_ShouldConfirmOrderAndReduceStock()
+    public async Task ProcesarPedido_StockSuficiente_DebeConfirmarPedidoYDescontarStock()
     {
         // 1. Arrange (Preparación)
         using var context = new OrderFlowDbContext(_options);
@@ -43,7 +43,6 @@ public class InventoryProcessorTests : IDisposable
         var pedidoId = Guid.NewGuid();
         var sku = "ABC-01";
         
-        // El DbContext ya sembró los SKUs en OnModelCreating. Obtenemos el stock y ajustamos la disponibilidad.
         var stock = await context.Stocks.FindAsync(sku);
         if (stock != null)
         {
@@ -97,7 +96,7 @@ public class InventoryProcessorTests : IDisposable
     }
 
     [Fact]
-    public async Task ProcessOrderCreatedAsync_InsufficientStock_ShouldRejectOrderWithoutReducingStock()
+    public async Task ProcesarPedido_StockInsuficiente_DebeRechazarPedidoSinDescontarStock()
     {
         // 1. Arrange (Preparación)
         using var context = new OrderFlowDbContext(_options);
