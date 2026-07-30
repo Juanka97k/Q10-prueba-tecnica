@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using OrderFlow.Api.Hubs;
@@ -7,8 +8,13 @@ using OrderFlow.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Agregar Controladores y SignalR
-builder.Services.AddControllers();
+// 1. Agregar Controladores con conversor JsonStringEnumConverter para Enums ("Pending", "Confirmed", "Rejected")
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
 builder.Services.AddSignalR();
 
 // 2. Configurar CORS para permitir la conexión desde el cliente Angular (http://localhost:4200)

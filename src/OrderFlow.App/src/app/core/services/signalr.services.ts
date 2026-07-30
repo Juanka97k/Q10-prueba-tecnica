@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { Subject, Observable } from 'rxjs';
 import { OrderProcessedEvent } from '../models/order-processed-event.model';
@@ -11,6 +11,7 @@ export class SignalRService {
   private hubConnection!: signalR.HubConnection;
   private orderUpdatedSubject = new Subject<OrderProcessedEvent>();
 
+  public isConnected = signal<boolean>(false);
   public orderUpdated$: Observable<OrderProcessedEvent> = this.orderUpdatedSubject.asObservable();
 
   public startConnection(): void {
@@ -21,8 +22,26 @@ export class SignalRService {
 
     this.hubConnection
       .start()
-      .then(() => console.log('✅ Conectado exitosamente a SignalR Hub'))
-      .catch((err) => console.error('❌ Error al conectar con SignalR:', err));
+      .then(() => {
+        console.log('✅ Conectado exitosamente a SignalR Hub');
+        this.isConnected.set(true);
+      })
+      .catch((err) => {
+        console.error('❌ Error al conectar con SignalR:', err);
+        this.isConnected.set(false);
+      });
+
+    this.hubConnection.onreconnecting(() => {
+      this.isConnected.set(false);
+    });
+
+    this.hubConnection.onreconnected(() => {
+      this.isConnected.set(true);
+    });
+
+    this.hubConnection.onclose(() => {
+      this.isConnected.set(false);
+    });
 
     // Escuchar el evento que emite la API en OrderProcessedConsumerService
     this.hubConnection.on('OrderUpdated', (event: OrderProcessedEvent) => {
@@ -34,6 +53,7 @@ export class SignalRService {
   public stopConnection(): void {
     if (this.hubConnection) {
       this.hubConnection.stop();
+      this.isConnected.set(false);
     }
   }
 }

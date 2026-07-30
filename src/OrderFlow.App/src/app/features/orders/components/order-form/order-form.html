@@ -19,7 +19,7 @@
 
     <div class="form-group">
       <label>SKU del Producto *</label>
-      <div class="sku-selector">
+      <div *ngIf="stocks().length > 0 && isSystemOnline" class="sku-selector">
         <button
           type="button"
           *ngFor="let item of stocks()"
@@ -29,6 +29,10 @@
         >
           {{ item.sku }} ({{ item.disponible }} disp.)
         </button>
+      </div>
+
+      <div *ngIf="stocks().length === 0 || !isSystemOnline" class="no-stocks-text">
+        ⚠️ Productos no disponibles (Servidor Fuera de Línea)
       </div>
     </div>
 
@@ -55,7 +59,7 @@
       ✅ {{ successMessage() }}
     </div>
 
-    <button type="submit" class="btn-submit" [disabled]="isSubmitting()">
+    <button type="submit" class="btn-submit" [disabled]="isSubmitting() || stocks().length === 0 || !isSystemOnline">
       <span *ngIf="!isSubmitting()">Enviar Pedido 🚀</span>
       <span *ngIf="isSubmitting()">Procesando...</span>
     </button>

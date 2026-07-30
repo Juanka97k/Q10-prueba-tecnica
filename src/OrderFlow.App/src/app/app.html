@@ -8,15 +8,20 @@
         <p class="subtitle">Monitoreo de Pedidos e Inventario Asíncrono en Tiempo Real</p>
       </div>
     </div>
-    <div class="status-pill">
+    <div class="status-pill" [class.offline]="!isSystemOnline()">
       <span class="status-dot"></span>
-      <span class="status-text">Sistema en Línea</span>
+      <span class="status-text">{{ isSystemOnline() ? 'Sistema en Línea' : 'Sistema Fuera de Línea' }}</span>
     </div>
   </header>
 
   <!-- Grid Principal con Formulario y Tabla de Pedidos -->
   <div class="grid">
-    <app-order-form (orderCreated)="onOrderCreated($event)"></app-order-form>
+    <app-order-form
+      [isSystemOnline]="isSystemOnline()"
+      (orderCreated)="onOrderCreated($event)"
+      (stockStatusChanged)="onStockStatusChanged($event)"
+    ></app-order-form>
+
     <app-order-list [orders]="orders()"></app-order-list>
   </div>
 </div>

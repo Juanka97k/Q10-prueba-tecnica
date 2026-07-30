@@ -2,7 +2,7 @@ import { Component, Input, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { SignalRService } from '../../../../core/services/signalr.services';
-import { Order } from '../../../../core/models/order.model';
+import { Order, OrderStatus } from '../../../../core/models/order.model';
 
 @Component({
   selector: 'app-order-list',
@@ -29,6 +29,20 @@ export class OrderList implements OnInit, OnDestroy {
         targetOrder.estado = event.estado;
       }
     });
+  }
+
+  public getStatusString(estado: any): 'Pending' | 'Confirmed' | 'Rejected' {
+    const val = String(estado);
+    if (val === '0' || val === 'Pending') {
+      return 'Pending';
+    }
+    if (val === '1' || val === 'Confirmed') {
+      return 'Confirmed';
+    }
+    if (val === '2' || val === 'Rejected') {
+      return 'Rejected';
+    }
+    return 'Pending';
   }
 
   ngOnDestroy(): void {

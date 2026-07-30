@@ -32,12 +32,12 @@
           <td>
             <span
               class="state-badge"
-              [class.pending]="order.estado === 'Pending'"
-              [class.confirmed]="order.estado === 'Confirmed'"
-              [class.rejected]="order.estado === 'Rejected'"
+              [class.pending]="getStatusString(order.estado) === 'Pending'"
+              [class.confirmed]="getStatusString(order.estado) === 'Confirmed'"
+              [class.rejected]="getStatusString(order.estado) === 'Rejected'"
             >
               <span class="dot"></span>
-              {{ order.estado }}
+              {{ getStatusString(order.estado) }}
             </span>
           </td>
           <td class="date-text">{{ order.creadoEn | date:'HH:mm:ss' }}</td>

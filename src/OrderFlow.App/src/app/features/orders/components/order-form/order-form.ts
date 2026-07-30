@@ -1,4 +1,4 @@
-import { Component, OnInit, Output, EventEmitter, inject, signal } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { OrderService } from '../../../../core/services/order.services';
@@ -17,7 +17,9 @@ export class OrderForm implements OnInit {
   private fb = inject(FormBuilder);
   private orderService = inject(OrderService);
 
+  @Input() isSystemOnline: boolean = true;
   @Output() orderCreated = new EventEmitter<Order>();
+  @Output() stockStatusChanged = new EventEmitter<boolean>();
 
   public isSubmitting = signal<boolean>(false);
   public errorMessage = signal<string | null>(null);
@@ -39,12 +41,15 @@ export class OrderForm implements OnInit {
     this.orderService.getStocks().subscribe({
       next: (data) => {
         this.stocks.set(data);
+        this.stockStatusChanged.emit(true);
         if (data.length > 0 && !this.orderForm.get('sku')?.value) {
           this.orderForm.patchValue({ sku: data[0].sku });
         }
       },
       error: (err) => {
         console.error('Error al cargar inventario de stock:', err);
+        this.stocks.set([]);
+        this.stockStatusChanged.emit(false);
       }
     });
   }
@@ -54,7 +59,7 @@ export class OrderForm implements OnInit {
   }
 
   public onSubmit(): void {
-    if (this.orderForm.invalid) {
+    if (this.orderForm.invalid || !this.isSystemOnline || this.stocks().length === 0) {
       this.orderForm.markAllAsTouched();
       return;
     }
@@ -70,8 +75,15 @@ export class OrderForm implements OnInit {
         this.isSubmitting.set(false);
         this.successMessage.set(`Pedido ${newOrder.id.substring(0, 8)}... registrado exitosamente.`);
         this.orderCreated.emit(newOrder);
-        this.orderForm.patchValue({ clienteNombre: '' });
-        // Recargar el stock dinámico tras hacer el pedido
+        
+        // Reiniciar el formulario de forma limpia marcándolo como untouched para evitar falsas alertas rojas
+        const currentSku = this.stocks().length > 0 ? this.stocks()[0].sku : '';
+        this.orderForm.reset({
+          clienteNombre: '',
+          sku: currentSku,
+          cantidad: 1
+        });
+
         this.loadStocks();
       },
       error: (err) => {
