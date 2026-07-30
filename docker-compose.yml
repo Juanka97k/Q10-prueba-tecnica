@@ -74,6 +74,9 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      # Dependencia opcional con la API (descomentar si se requiere sincronización estricta de arranque):
+      # api:
+      #   condition: service_started
     networks:
       - orderflow-net
 
@@ -87,6 +90,9 @@ services:
       - "4200:80"
     depends_on:
       - api
+      # Alternativa con comprobación explícita de salud (descomentar si se agrega healthcheck a la API):
+      # api:
+      #   condition: service_started
     networks:
       - orderflow-net
 
