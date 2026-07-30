@@ -1,13 +1,13 @@
 # ==========================================
-# Etapa 1: Base Runtime (Producción)
+# Etapa 1: Base Runtime Alpine (Producción Ultraligera)
 # ==========================================
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS base
 WORKDIR /app
 
 # ==========================================
-# Etapa 2: Build (SDK de Compilación)
+# Etapa 2: Build (SDK Alpine de Compilación)
 # ==========================================
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
 WORKDIR /src
 
 # Copiar archivos .csproj para restaurar dependencias NuGet (Capa de Caché)
@@ -29,7 +29,7 @@ FROM build AS publish
 RUN dotnet publish "OrderFlow.InventoryWorker.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # ==========================================
-# Etapa 4: Runner (Imagen Ejecutable Final)
+# Etapa 4: Runner (Imagen Ejecutable Final Alpine)
 # ==========================================
 FROM base AS final
 WORKDIR /app
