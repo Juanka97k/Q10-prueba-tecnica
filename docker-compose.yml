@@ -1,5 +1,5 @@
 services:
-  # Base de datos PostgreSQL
+  # 1. Base de datos PostgreSQL
   postgres:
     image: postgres:16-alpine
     container_name: orderflow-db
@@ -16,8 +16,10 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - orderflow-net
 
-  # Broker de Mensajería RabbitMQ
+  # 2. Broker de Mensajería RabbitMQ
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: orderflow-mq
@@ -32,6 +34,65 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - orderflow-net
+
+  # 3. Web API .NET (HTTP REST + SignalR Hub)
+  api:
+    build:
+      context: .
+      dockerfile: src/OrderFlow.Api/Dockerfile
+    container_name: orderflow-api
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-orderflow_db};Username=${POSTGRES_USER:-orderflow_user};Password=${POSTGRES_PASSWORD:-orderflow_password}"
+      RabbitMQ__Host: "rabbitmq"
+      RabbitMQ__Username: "${RABBITMQ_USER:-guest}"
+      RabbitMQ__Password: "${RABBITMQ_PASSWORD:-guest}"
+    ports:
+      - "5167:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - orderflow-net
+
+  # 4. Inventory Worker (.NET Background Service)
+  worker:
+    build:
+      context: .
+      dockerfile: src/OrderFlow.InventoryWorker/Dockerfile
+    container_name: orderflow-worker
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-orderflow_db};Username=${POSTGRES_USER:-orderflow_user};Password=${POSTGRES_PASSWORD:-orderflow_password}"
+      RabbitMQ__Host: "rabbitmq"
+      RabbitMQ__Username: "${RABBITMQ_USER:-guest}"
+      RabbitMQ__Password: "${RABBITMQ_PASSWORD:-guest}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - orderflow-net
+
+  # 5. Frontend Angular (Nginx Runner)
+  frontend:
+    build:
+      context: ./src/OrderFlow.App
+      dockerfile: Dockerfile
+    container_name: orderflow-app
+    ports:
+      - "4200:80"
+    depends_on:
+      - api
+    networks:
+      - orderflow-net
 
 volumes:
   postgres_data:
+
+networks:
+  orderflow-net:
+    driver: bridge

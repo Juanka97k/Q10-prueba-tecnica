@@ -5,6 +5,9 @@ using OrderFlow.Api.Services;
 
 namespace OrderFlow.Api.Controllers;
 
+/// <summary>
+/// Controlador HTTP para la gestión de pedidos e inventarios de stock en tiempo real.
+/// </summary>
 [ApiController]
 [Route("[controller]")]
 public class OrdersController : ControllerBase
@@ -23,6 +26,12 @@ public class OrdersController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Registra un nuevo pedido en estado Pendiente y dispara el evento asíncrono a RabbitMQ.
+    /// </summary>
+    /// <param name="request">Datos del pedido a crear (Cliente, SKU y Cantidad).</param>
+    /// <param name="cancellationToken">Token de cancelación.</param>
+    /// <returns>Objeto OrderResponse con estado HTTP 201 Created.</returns>
     [HttpPost]
     [ProducesResponseType(typeof(OrderResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -59,6 +68,9 @@ public class OrdersController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Obtiene el historial completo de pedidos ordenados descendentemente por fecha.
+    /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<OrderResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
@@ -80,6 +92,9 @@ public class OrdersController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Obtiene el catálogo dinámico de existencias de stock desde PostgreSQL.
+    /// </summary>
     [HttpGet("stocks")]
     [ProducesResponseType(typeof(IEnumerable<StockResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
@@ -101,6 +116,11 @@ public class OrdersController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Obtiene un pedido específico mediante su identificador único (GUID).
+    /// </summary>
+    /// <param name="id">GUID del pedido.</param>
+    /// <param name="cancellationToken">Token de cancelación.</param>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(OrderResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]

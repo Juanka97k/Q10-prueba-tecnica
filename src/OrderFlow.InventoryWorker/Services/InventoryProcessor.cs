@@ -8,11 +8,20 @@ using RabbitMQ.Client;
 
 namespace OrderFlow.InventoryWorker.Services;
 
+/// <summary>
+/// Contrato para el procesador asíncrono de inventario en el Worker.
+/// </summary>
 public interface IInventoryProcessor
 {
+    /// <summary>
+    /// Procesa la creación de un pedido evaluando existencias en PostgreSQL y garantizando Idempotencia.
+    /// </summary>
     Task ProcessOrderCreatedAsync(OrderCreatedIntegrationEvent integrationEvent, CancellationToken cancellationToken);
 }
 
+/// <summary>
+/// Servicio procesador de inventario con gestión de transacciones PostgreSQL, deduplicación y mensajería RabbitMQ.
+/// </summary>
 public class InventoryProcessor : IInventoryProcessor
 {
     private readonly OrderFlowDbContext _context;
@@ -29,8 +38,13 @@ public class InventoryProcessor : IInventoryProcessor
         _logger = logger;
     }
 
+    /// <summary>
+    /// Procesa un evento de creación de pedido asíncronamente desde la cola 'order-created-queue'.
+    /// Valida idempotencia, abre transacción atómica, descuenta stock si está disponible y notifica el resultado.
+    /// </summary>
     public async Task ProcessOrderCreatedAsync(OrderCreatedIntegrationEvent integrationEvent, CancellationToken cancellationToken)
     {
+        // 1. Validación de Idempotencia: Verificar si el evento ya fue procesado anteriormente
         var yaProcesado = await _context.ProcessedEvents
             .AnyAsync(p => p.EventId == integrationEvent.EventId, cancellationToken);
 
@@ -40,6 +54,7 @@ public class InventoryProcessor : IInventoryProcessor
             return;
         }
 
+        // 2. Iniciar Transacción de Base de Datos PostgreSQL
         using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
         try
@@ -53,6 +68,7 @@ public class InventoryProcessor : IInventoryProcessor
                 return;
             }
 
+            // 3. Evaluar disponibilidad e impactar inventario
             if (stock != null && stock.Disponible >= integrationEvent.Cantidad)
             {
                 stock.Disponible -= integrationEvent.Cantidad;
@@ -65,6 +81,7 @@ public class InventoryProcessor : IInventoryProcessor
                 _logger.LogWarning("Stock insuficiente para Pedido {OrderId}. Estado cambiado a Rejected.", pedido.Id);
             }
 
+            // 4. Registrar evento en la tabla ProcessedEvents (Inbox Pattern)
             _context.ProcessedEvents.Add(new ProcessedEvent
             {
                 EventId = integrationEvent.EventId,
@@ -74,7 +91,7 @@ public class InventoryProcessor : IInventoryProcessor
             await _context.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
 
-            // 📣 PUBLICAR EVENTO DE RESPUESTA A RABBITMQ PARA LA API
+            // 5. Publicar evento de respuesta 'OrderProcessedIntegrationEvent' a RabbitMQ
             await PublishOrderProcessedEventAsync(new OrderProcessedIntegrationEvent(
                 OrderId: pedido.Id,
                 Estado: pedido.Estado.ToString(),
@@ -89,6 +106,9 @@ public class InventoryProcessor : IInventoryProcessor
         }
     }
 
+    /// <summary>
+    /// Publica el evento de orden procesada a la cola 'order-processed-queue' de RabbitMQ para ser retransmitido vía SignalR.
+    /// </summary>
     private async Task PublishOrderProcessedEventAsync(OrderProcessedIntegrationEvent @event)
     {
         var factory = new ConnectionFactory
