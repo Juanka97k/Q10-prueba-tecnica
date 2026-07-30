@@ -59,29 +59,29 @@ El sistema se organizó bajo el patrón de **Monolito Modular** dividiendo respo
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Cliente as 👤 Cliente (Angular 18)
-    participant API as 🚀 OrderFlow.Api (.NET 9)
-    participant DB as 🐘 PostgreSQL DB
-    participant MQ as 🐇 RabbitMQ Broker
-    participant Worker as ⚙️ InventoryWorker
+    actor Cliente as Cliente (Angular 18)
+    participant API as OrderFlow.Api (.NET 9)
+    participant DB as PostgreSQL DB
+    participant MQ as RabbitMQ Broker
+    participant Worker as InventoryWorker
 
     Cliente->>API: POST /orders (Crear Pedido)
     API->>DB: Guardar Pedido (Estado: Pending)
-    API->>MQ: Publicar Evento 'OrderCreated'
-    API-->>Cliente: Respuesta HTTP 201 Created (Pending)
+    API->>MQ: Publicar Evento OrderCreated
+    API-->>Cliente: HTTP 201 Created (Pending)
 
-    MQ-->>Worker: Consumir Evento 'OrderCreated' (Asíncrono)
-    Worker->>DB: Iniciar Transacción (Verificar Stock & Deduplicar Evento)
-    
+    MQ-->>Worker: Consumir Evento OrderCreated (Asincrono)
+    Worker->>DB: Iniciar Transaccion - Verificar Stock y Deduplicar Evento
+
     alt Stock Suficiente
-        Worker->>DB: Descontar Stock & Cambiar Estado a 'Confirmed'
+        Worker->>DB: Descontar Stock y Cambiar Estado a Confirmed
     else Stock Insuficiente
-        Worker->>DB: Cambiar Estado a 'Rejected' (Sin tocar Stock)
+        Worker->>DB: Cambiar Estado a Rejected sin tocar Stock
     end
-    
-    Worker->>MQ: Publicar Evento 'OrderProcessed'
-    MQ-->>API: Consumir Evento 'OrderProcessed'
-    API-->>Cliente: Push WebSocket en Tiempo Real (SignalR)
+
+    Worker->>MQ: Publicar Evento OrderProcessed
+    MQ-->>API: Consumir Evento OrderProcessed
+    API-->>Cliente: Push WebSocket en Tiempo Real via SignalR
 ```
 
 ### 2. Persistencia (Elección de PostgreSQL vs In-Memory)
