@@ -46,6 +46,7 @@ services:
       dockerfile: src/OrderFlow.Api/Dockerfile
     container_name: orderflow-api
     environment:
+      ASPNETCORE_URLS: "http://+:80"
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-orderflow_db};Username=${POSTGRES_USER:-orderflow_user};Password=${POSTGRES_PASSWORD:-orderflow_password}"
       RabbitMQ__Host: "rabbitmq"
       RabbitMQ__Username: "${RABBITMQ_USER:-guest}"

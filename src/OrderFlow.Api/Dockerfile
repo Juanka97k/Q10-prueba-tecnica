@@ -3,6 +3,7 @@
 # ==========================================
 FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS base
 WORKDIR /app
+ENV ASPNETCORE_URLS=http://+:80
 EXPOSE 80
 EXPOSE 5167
 
