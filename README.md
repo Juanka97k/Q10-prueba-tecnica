@@ -157,3 +157,4 @@ dotnet test --logger "console;verbosity=detailed"
    - Incorporar OAuth2 / OpenID Connect con **JWT (JSON Web Tokens)** para asegurar los endpoints REST y las conexiones WebSocket de SignalR.
 6. **Pulido Visual y Mejoras de UX/UI en el Frontend (Angular):**
    - Incorporar notificaciones flotantes animadas (Toast alerts), paginación dinámica con filtros avanzados por estado (`Pending`, `Confirmed`, `Rejected`) en la tabla de pedidos y soporte para modo oscuro/claro.
+
