@@ -1,1 +1,48 @@
-<p>order-list works!</p>
+<div class="card list-card">
+  <div class="list-header">
+    <h2>⚡ Pedidos en Tiempo Real</h2>
+    <span class="badge-count">{{ orders.length }} pedidos</span>
+  </div>
+  <p class="card-desc">Los estados se actualizan automáticamente vía WebSockets tras ser procesados por el Worker.</p>
+
+  <div *ngIf="orders.length === 0" class="empty-state">
+    <div class="empty-icon">📭</div>
+    <p>No hay pedidos registrados en esta sesión.</p>
+    <small>Completa el formulario para enviar la primera orden.</small>
+  </div>
+
+  <div *ngIf="orders.length > 0" class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>ID Pedido</th>
+          <th>Cliente</th>
+          <th>SKU</th>
+          <th>Cant.</th>
+          <th>Estado</th>
+          <th>Creado En</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let order of orders" class="order-row">
+          <td class="order-id" title="{{ order.id }}">{{ order.id.substring(0, 8) }}...</td>
+          <td class="client-name">{{ order.clienteNombre }}</td>
+          <td><span class="sku-badge">{{ order.sku }}</span></td>
+          <td><strong>{{ order.cantidad }}</strong></td>
+          <td>
+            <span
+              class="state-badge"
+              [class.pending]="order.estado === 'Pending'"
+              [class.confirmed]="order.estado === 'Confirmed'"
+              [class.rejected]="order.estado === 'Rejected'"
+            >
+              <span class="dot"></span>
+              {{ order.estado }}
+            </span>
+          </td>
+          <td class="date-text">{{ order.creadoEn | date:'HH:mm:ss' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,12 +1,20 @@
 import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { OrderForm } from './features/orders/components/order-form/order-form';
+import { OrderList } from './features/orders/components/order-list/order-list';
+import { Order } from './core/models/order.model';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  standalone: true,
+  imports: [CommonModule, OrderForm, OrderList],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = signal('OrderFlow.App');
+  public orders = signal<Order[]>([]);
+
+  public onOrderCreated(newOrder: Order): void {
+    this.orders.update(currentOrders => [newOrder, ...currentOrders]);
+  }
 }
