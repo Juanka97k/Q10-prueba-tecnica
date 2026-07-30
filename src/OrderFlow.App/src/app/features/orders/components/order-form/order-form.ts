@@ -1,7 +1,7 @@
 import { Component, OnInit, Output, EventEmitter, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { OrderService } from '../../../../core/services/order';
+import { OrderService } from '../../../../core/services/order.services';
 import { Order } from '../../../../core/models/order.model';
 import { CreateOrderRequest } from '../../../../core/models/create-order-request.model';
 import { Stock } from '../../../../core/models/stock.model';
