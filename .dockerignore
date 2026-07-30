@@ -1,0 +1,9 @@
+.git
+.vs
+.vscode
+bin
+obj
+tests
+src/OrderFlow.App/node_modules
+src/OrderFlow.App/dist
+src/OrderFlow.App/.angular
