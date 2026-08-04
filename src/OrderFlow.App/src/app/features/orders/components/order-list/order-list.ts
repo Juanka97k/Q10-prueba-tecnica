@@ -24,13 +24,13 @@ export class OrderList implements OnInit, OnDestroy {
 
     // 2. Suscribirse a las actualizaciones en tiempo real recibidas por RabbitMQ -> API -> SignalR
     this.signalRSubscription = this.signalRService.orderUpdated$.subscribe(event => {
-      console.log('⚡ Actualización de pedido recibida vía WebSocket:', event);
-      
-      // Buscar la orden por GUID sin importar diferencias de mayúsculas/minúsculas
       const targetOrder = this.orders.find(o => o.id.toLowerCase() === event.orderId.toLowerCase());
       if (targetOrder) {
         targetOrder.estado = event.estado;
-        // Forzar a Angular a refrescar el DOM de la tabla de inmediato
+
+        // Persistir el cambio de estado en localStorage
+        localStorage.setItem('orderflow_orders', JSON.stringify(this.orders));
+
         this.cd.markForCheck();
       }
     });

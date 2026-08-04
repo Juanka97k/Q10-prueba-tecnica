@@ -23,10 +23,24 @@ export class App implements OnInit {
   ngOnInit(): void {
     // Iniciar conexión SignalR
     this.signalRService.startConnection();
+
+    const savedOrders = localStorage.getItem('orderflow_orders');
+    if (savedOrders) {
+      try {
+        this.orders.set(JSON.parse(savedOrders));
+      } catch (e) {
+        console.error('Error al recuperar pedidos de localStorage', e);
+      }
+    }
   }
 
   public onOrderCreated(newOrder: Order): void {
-    this.orders.update(currentOrders => [newOrder, ...currentOrders]);
+    this.orders.update(currentOrders => {
+      const updated = [newOrder, ...currentOrders];
+      // Persistir en el navegador
+      localStorage.setItem('orderflow_orders', JSON.stringify(updated));
+      return updated;
+    });
   }
 
   public onStockStatusChanged(onlineStatus: boolean): void {
